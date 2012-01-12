@@ -1,0 +1,30 @@
+## STSyncable
+
+[STSyncable](https://github.com/aSmallTeapot/STSyncable) is a library that works with [AFNetworking](https://github.com/AFNetworking/AFNetworking) and [Magical Record](https://github.com/magicalpanda/MagicalRecord) to make lightweight, customizable syncing between a Core Data Store and RESTful API relatively simple.
+
+### How does it work?
+
+**Step Zero**: Add STSyncable as a Git submodule and to your Xcode project.
+
+**Step Two**: Add a `resourceURL` string field to your schema. No special treatment required.
+
+**Step Three**: Implement `+syncURL` in your model. Return an NSURL for the RESTful collection your model syncs with.
+
+**Step Four**: Implement `-updateFromDictionary:` in your model. The provided NSDictionary will contain the fields and values from the JSON returned by your API. Use it to populate your model as needed.
+
+**Step Five**: To sync, get an NSOperation from -performSync, providing blocks to be executed on success and failure, then add it to an NSOperationQueue and fire away.
+
+
+### What does it do?
+
+TODO: Explain how -performSync actually works.
+
+### Should I actually use this?
+
+Probably not. [RestKit](http://restkit.org/) is far more robust and designed for a number of usage scenarios I haven’t thought of. RestKit is reusable with any client database and has no external depencies; STSyncable depends on a third–party HTTP library and Core Data wrapper, in addition to being exclusively for Core Data.
+
+That being said, if you’re already using the depencies and want to make syncing a little easier without too much magic, STSyncable might be what you’re looking for.
+
+### Errata
+
+STSyncable is currently pre–alpha and definitely _should not_ be used in your shipping code.
