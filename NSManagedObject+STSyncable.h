@@ -25,6 +25,7 @@
 
 
 @interface NSManagedObject (STSyncable)
++ (NSNumber *)numberFromValue:(id)value;
 + (NSOperation *)performSync;
 + (NSOperation *)performSync:(void (^)())success;
 + (NSOperation *)performSync:(void (^)())success onFailure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON))failure;

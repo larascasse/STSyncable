@@ -10,6 +10,19 @@
 #import "AFJSONRequestOperation.h"
 
 @implementation NSManagedObject (STSyncable)
++ (NSNumber *)numberFromValue:(id)value {
+	if(value == NULL) {
+		return [NSNumber new];
+	}
+	
+	if([value isKindOfClass:[NSNumber class]]) {
+		return value;
+	}
+	
+	return nil;
+}
+
+
 + (NSOperation *)performSync {
 	return [[self class] performSync:NULL onFailure:NULL];
 }
