@@ -55,7 +55,10 @@
 		// Update and delete locally–stored items
 		for(id<STSyncable> syncItem in [syncableClass MR_findAll]) {
 			NSDictionary *updateDict = [syncItems objectForKey:[syncItem resourceUri]];
-			[syncItems removeObjectForKey:[syncItem resourceUri]];
+			if([syncItem resourceUri]) {
+				[syncItems removeObjectForKey:[syncItem resourceUri]];
+			}
+
 			if ([updateDict isKindOfClass:[NSNull class]]) {
 				[syncItem MR_deleteEntity];
 			} else {
