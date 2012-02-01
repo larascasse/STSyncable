@@ -42,9 +42,15 @@
 	// reference the NSManagedObject subclass actually being synced
 	Class<STSyncable> syncableClass = [self class];
 	
-	// Generate a request operation
-	NSURLRequest *request = [NSURLRequest requestWithURL:[syncableClass syncURL]];
-	AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, NSDictionary *JSON) {
+	__block STFailureBlock failureBlock = ^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON){
+		if(failure == NULL) {
+			NSLog(@"Request %@ failed\nResponse: %@\nError:%@\nJSON: %@\n\n", request, response, error, JSON);
+		} else {
+			failure(request, response, error, JSON);
+		}
+	};
+	
+	 STSuccessBlock syncBlock = ^(NSURLRequest *request, NSHTTPURLResponse *response, NSDictionary *JSON) {
 		// Create a mutable dictionary of items to sync, keyed by resource URL
 		NSArray *jsonObjects = [JSON objectForKey:@"objects"];
 		NSMutableDictionary *syncItems = [NSMutableDictionary dictionaryWithCapacity:jsonObjects.count];
@@ -58,7 +64,7 @@
 			if([syncItem resourceUri]) {
 				[syncItems removeObjectForKey:[syncItem resourceUri]];
 			}
-
+			
 			if ([updateDict isKindOfClass:[NSNull class]]) {
 				[syncItem MR_deleteEntity];
 			} else {
@@ -81,13 +87,23 @@
 		if(success) {
 			success();
 		}
-	} failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON){
-		if(failure == NULL) {
-			NSLog(@"Request %@ failed\nResponse: %@\nError:%@\nJSON: %@\n\n", request, response, error, JSON);
-		} else {
-			failure(request, response, error, JSON);
-		}
-	}];
+	};
+	
+	__block STSuccessBlock countBlock = ^(NSURLRequest *request, NSHTTPURLResponse *response, NSDictionary *JSON) {
+		// Build a URL to request all extant objects
+		NSNumber *count = [[JSON objectForKey:@"meta"] objectForKey:@"total_count"]; 
+		NSString *requestUri = [NSString stringWithFormat:@"%@&limit=%@", request.URL.absoluteString, count];
+		requestUri = [requestUri stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		request = [NSURLRequest requestWithURL:[NSURL URLWithString:requestUri]];
+		
+		AFJSONRequestOperation *syncOperation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:syncBlock failure:failureBlock];
+		[[NSOperationQueue currentQueue] addOperation:syncOperation];
+	};
+	
+	
+	// Create the first request, to determine how many objects exist
+	NSURLRequest *request = [NSURLRequest requestWithURL:[syncableClass syncURL]];
+	AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:countBlock failure:failureBlock];
 	
 	return operation;
 }

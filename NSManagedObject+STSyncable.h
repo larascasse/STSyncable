@@ -11,6 +11,9 @@
 #import "CoreData+MagicalRecord.h"
 #import "AFHTTPClient.h"
 
+typedef void (^STSuccessBlock)(NSURLRequest *request, NSHTTPURLResponse *response, id JSON);
+typedef void (^STFailureBlock)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON);
+
 @protocol STSyncable
 + (NSURL *)syncURL;
 - (NSString *)resourceUri;
