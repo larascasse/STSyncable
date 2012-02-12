@@ -12,15 +12,19 @@
 #import "AFHTTPClient.h"
 
 typedef void (^STSuccessBlock)(NSURLRequest *request, NSHTTPURLResponse *response, id JSON);
-typedef void (^STFailureBlock)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON);
+typedef void (^STFailureBlock)(AFHTTPRequestOperation *operation, NSError *error);
 
 @protocol STSyncable
-+ (NSURL *)syncURL;
++ (AFHTTPClient *)webAPI;
 - (NSString *)resourceUri;
 - (void)setResourceUri:(NSString *)string;
 - (void)updateFromDictionary:(NSDictionary *)dictionary;
 
-@optional // Defined by MagicalRecord
+@optional
+// Overrides for default values
++ (NSString *)syncPath;
+
+// Defined by MagicalRecord
 + (id)MR_createEntity;
 - (BOOL)MR_deleteEntity;
 + (NSArray *)MR_findAll;
@@ -31,5 +35,5 @@ typedef void (^STFailureBlock)(NSURLRequest *request, NSHTTPURLResponse *respons
 + (NSNumber *)numberFromValue:(id)value;
 + (NSOperation *)performSync;
 + (NSOperation *)performSync:(void (^)())success;
-+ (NSOperation *)performSync:(void (^)())success onFailure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON))failure;
++ (NSOperation *)performSync:(void (^)())success onFailure:(STFailureBlock)failure;
 @end
