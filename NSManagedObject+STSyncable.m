@@ -11,7 +11,7 @@
 
 @implementation NSManagedObject (STSyncable)
 + (NSNumber *)numberFromValue:(id)value {
-	if(value == NULL) {
+	if([value isKindOfClass:[NSNull class]]) {
 		return [NSNumber new];
 	}
 	
@@ -19,7 +19,13 @@
 		return value;
 	}
 	
-	return nil;
+	if([value isKindOfClass:[NSString class]]) {
+		NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
+		[f setNumberStyle:NSNumberFormatterDecimalStyle];
+		return [f numberFromString:value];
+	}
+	
+	return NULL;
 }
 
 
